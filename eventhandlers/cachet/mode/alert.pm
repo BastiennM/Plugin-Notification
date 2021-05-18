@@ -33,16 +33,20 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
+        #
         'hostname:s'            => { name => 'hostname' },
         'urlpath:s'             => { name => 'urlpath', default=>, default => 'https://localhost:8000/api/v1/components' },
         'port:s'                => { name => 'port', default => 8000 },
         'proto:s'               => { name => 'proto', default => 'https' },
+        #
         'api_key:s'             => { name => 'api_key'},
         'name:s'                => { name=> 'name' } ,
-		'message:s'             => { name=> 'message' } ,
-		'status:s'              => { name=> 'status' },
+		'message:s'             => { name=> 'message' ,} ,
+		#
+        'status:s'              => { name=> 'status' },
 		'visible:s'             => { name=> 'visible' },
-		'component_id:s'        => { name=> 'component_id' },
+		#
+        'component_id:s'        => { name=> 'component_id' },
 		'component_status:s'    => { name=> 'component_status' },
 		'notify:s'              => { name=> 'notify' },
     });
@@ -50,6 +54,31 @@ sub new {
     $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
+
+sub check_options {
+    my ($self, %options) = @_;
+
+    self->SUPER::init(%options);
+    
+    if (!defined($self->{option_results}->{hostname})) {
+        $self->{output}->add_option_msg(short_msg => "You need to set --hostname option");
+        $self->{output}->option_exit();
+    }
+    if (!defined($self->{option_results}->{api_key})) {
+        $self->{output}->add_option_msg(short_msg => "You need to set --api_key option");
+        $self->{output}->option_exit();
+    }
+    if (!defined($self->{option_results}->{component_id})) {
+        $self->{output}->add_option_msg(short_msg => "You need to set --component_id option");
+        $self->{output}->option_exit();
+    }
+    if (!defined($self->{option_results}->{status})) {
+        $self->{output}->add_option_msg(short_msg => "You need to set --status option");
+        $self->{output}->option_exit();
+    }
+    $self->{http}->set_options(%{$self->{option_results}});
+}
+
 
 
         
