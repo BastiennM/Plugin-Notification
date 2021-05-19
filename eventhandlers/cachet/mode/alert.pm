@@ -45,7 +45,7 @@ sub new {
         'name:s'                => { name=> 'name' } ,
 		'message:s'             => { name=> 'message'} ,
         'status:s'              => { name=> 'status' },
-		'visible:s'             => { name=> 'visible' },
+		'visible:s'             => { name=> 'visible', default => 'true' },
         'component-id:s'        => { name=> 'component_id' },
 		'component-status:s'    => { name=> 'component_status' },
     });
@@ -61,6 +61,14 @@ sub check_options {
     
     if (!defined($self->{option_results}->{hostname})) {
         $self->{output}->add_option_msg(short_msg => "You need to set --hostname option");
+        $self->{output}->option_exit();
+    }
+    if (!defined($self->{option_results}->{message})) {
+        $self->{output}->add_option_msg(short_msg => "You need to set --message option");
+        $self->{output}->option_exit();
+    }
+    if (!defined($self->{option_results}->{name})) {
+        $self->{output}->add_option_msg(short_msg => "You need to set --name option");
         $self->{output}->option_exit();
     }
     if (!defined($self->{option_results}->{api_key})) {
@@ -97,16 +105,71 @@ sub run {
 
     $self->{http}->add_header(key => 'Content-Type', value => 'application/json');
     $self->{http}->add_header(key => 'X-Cachet-Token', value => $self->{option_results}->{api_key});
-    print('ok');
+
     my $data = { name => $self->{option_results}->{name}, message => $self->{option_results}->{message}, status => $self->{option_results}->{status}, visible => $self->{option_results}->{visible}, component_id => $self->{option_results}->{component_id}, component_status => $self->{option_results}->{component_status}};
     my $encoded_data = encode_json($data);
-    print Dumper($encoded_data);
     my $response = $self->{http}->request(url_path => $url,
     method => 'POST', query_form_post => $encoded_data);
-    print Dumper($response)
+
 }
 
 1;
+
+
+__END__
+
+=head1 MODE
+
+Send alert to cachethq components
+=over 6
+
+=item B<--api-key>
+
+Cachet API key 
+Check user profile to get it
+
+=item B<--component-id>
+
+ID of your compononent
+Check the component page to get it in the URL
+
+=item B<--component-status>
+
+Status of your component
+
+It can be : 
+
+1 -> Operational
+2 -> Performance Problem
+3 -> Partial failure
+4 -> Major Failure
+
+=item B<--status>
+
+Status of the incident
+
+It can be : 
+
+1 -> Investigation in progress
+2 -> Identified
+3 -> Under Surveillance
+4 -> Corrected
+
+=item B<--name>
+
+Name of the incident
+
+=item B<--message>
+
+A message (supporting Markdown) to explain more
+
+=item B<--visible>
+
+Whether the incident is publicly visible (true by default)
+
+=back
+
+=cut
 
 
 
