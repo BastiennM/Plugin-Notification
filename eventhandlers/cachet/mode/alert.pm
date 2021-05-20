@@ -128,6 +128,22 @@ Send alert to cachethq components
 Cachet API key 
 Check user profile to get it
 
+=item B<--hostname>
+
+Hostname of the cachet
+
+=item B<--urlpath>
+
+Path to add to the hostname (by default "/")
+
+=item B<--port>
+
+Port of the cachet component (by default 8000)
+
+=item B<--proto>
+
+Protocol to be used (by default https)
+
 =item B<--component-id>
 
 ID of your compononent
