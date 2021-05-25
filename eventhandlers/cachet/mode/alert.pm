@@ -90,7 +90,7 @@ sub new {
         'api-key:s'             => { name => 'api_key'},
         'name:s'                => { name=> 'name'} ,
 		'message:s'             => { name=> 'message'} ,
-        'status:s'              => { name=> 'status' },
+        'status:s'              => { name=> 'status' , default=> 1},
 		'visible:s'             => { name=> 'visible', default => 'true' },
         'component-id:s'        => { name=> 'component_id' },
 		'component-status:s'    => { name=> 'component_status' },
@@ -125,10 +125,6 @@ sub check_options {
     }
     if (($self->{option_results}->{component_status}) <0 || ($self->{option_results}->{component_status}) > 3) {
         $self->{output}->add_option_msg(short_msg => "You need to set --component_status between 0 and 3");
-        $self->{output}->option_exit();
-    }
-    if (!defined($self->{option_results}->{status})) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --status option");
         $self->{output}->option_exit();
     }
     if (($self->{option_results}->{status})<1 || ($self->{option_results}->{status})>4) {
