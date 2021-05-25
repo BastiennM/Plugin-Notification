@@ -27,9 +27,55 @@ use warnings;
 use centreon::plugins::http;
 use JSON::XS;
 use HTTP::Request();
-use Data::Dumper;
+use Encode qw(encode decode);
 
-# use JSON::MaybeXS qw(encode_json);
+my $enc = 'utf-8';
+
+my %cachet_status = (
+    0 => 1,
+    1 => 2,
+    2 => 3,
+    3 => 4
+);
+
+my %cachet_message = (
+    "fr" => {
+        1 => {
+            name => "Tout va bien",
+            message => "Aucun problèmes détecté"
+            },
+        2 => {
+            name => "Probleme de performances",
+            message =>"petit problème de perf"
+        },
+        3 => {
+            name =>"Panne partielle",
+            message =>"petite panne"
+        },
+        4 => {
+            name=>"Panne majeure",
+            message=>"grosse panne"
+        }
+    },
+    "en" => {
+        1 => {
+            name => "everything is okey",
+            message => "no problem"
+            },
+        2 => {
+            name => "Prooblèm perf",
+            message =>"petit problème de perf"
+        },
+        3 => {
+            name =>"Panne partielle",
+            message =>"petite panne"
+        },
+        4 => {
+            name=>"Panne majeure",
+            message=>"grosse panne"
+        }
+    }
+);
 
 sub new {
     my ($class, %options) = @_;
@@ -42,13 +88,15 @@ sub new {
         'port:s'                => { name => 'port', default => 8000 },
         'proto:s'               => { name => 'proto', default => 'https' },
         'api-key:s'             => { name => 'api_key'},
-        'name:s'                => { name=> 'name' } ,
-		'message:s'             => { name=> 'message'} ,
+        'name:s'                => { name=> 'name' ,default => 'test'} ,
+		'message:s'             => { name=> 'message' , default => 'test'} ,
         'status:s'              => { name=> 'status' },
 		'visible:s'             => { name=> 'visible', default => 'true' },
         'component-id:s'        => { name=> 'component_id' },
 		'component-status:s'    => { name=> 'component_status' },
+        'language:s'            => { name=> 'language' , default=>'fr'},
     });
+
 
     $self->{http} = centreon::plugins::http->new(%options);
     return $self;
@@ -63,14 +111,6 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "You need to set --hostname option");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{option_results}->{message})) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --message option");
-        $self->{output}->option_exit();
-    }
-    if (!defined($self->{option_results}->{name})) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --name option");
-        $self->{output}->option_exit();
-    }
     if (!defined($self->{option_results}->{api_key})) {
         $self->{output}->add_option_msg(short_msg => "You need to set --api_key option");
         $self->{output}->option_exit();
@@ -83,24 +123,48 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "You need to set --component_status option");
         $self->{output}->option_exit();
     }
-    if (($self->{option_results}->{component_status}) <1 && ($self->{option_results}->{component_status}) > 4) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --component_status between 1 and 4");
+    if (($self->{option_results}->{component_status}) <0 || ($self->{option_results}->{component_status}) > 3) {
+        $self->{output}->add_option_msg(short_msg => "You need to set --component_status between 0 and 3");
         $self->{output}->option_exit();
     }
     if (!defined($self->{option_results}->{status})) {
         $self->{output}->add_option_msg(short_msg => "You need to set --status option");
         $self->{output}->option_exit();
     }
-    if (($self->{option_results}->{status})<1 && ($self->{option_results}->{status})>4) {
+    if (($self->{option_results}->{status})<1 || ($self->{option_results}->{status})>4) {
         $self->{output}->add_option_msg(short_msg => "You need to set --status between 1 and 4");
         $self->{output}->option_exit();
     }
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
+sub cachet_statusupdate{
+    my ($self, %options) = @_;
+
+        if (defined($self->{option_results}->{component_status}) && $self->{option_results}->{component_status} ne '') {
+            if (defined($cachet_status{lc($self->{option_results}->{component_status})})) {
+                $self->{option_results}->{component_status} = $cachet_status{lc($self->{option_results}->{component_status})};
+            }
+        }
+}
+
+sub cachet_message{
+    my ($self, %options) = @_;
+
+    if (defined($self->{option_results}->{language}) && $self->{option_results}->{language} ne '') {
+        if (defined($cachet_message{lc($self->{option_results}->{language})})) {
+            $self->{option_results}->{name} = decode($enc,$cachet_message{lc($self->{option_results}->{language})}{$self->{option_results}->{component_status}}{name});
+            $self->{option_results}->{message} = decode($enc, $cachet_message{lc($self->{option_results}->{language})}{$self->{option_results}->{component_status}}{message});
+        }
+    }
+}
+
 sub run {
     my ($self, %options) = @_;
-    
+
+    $self->cachet_statusupdate();
+    $self->cachet_message();
+
     my $url = $self->{option_results}->{urlpath} . "api/v1/incidents";
 
     $self->{http}->add_header(key => 'Content-Type', value => 'application/json');
@@ -110,7 +174,6 @@ sub run {
     my $encoded_data = encode_json($data);
     my $response = $self->{http}->request(url_path => $url,
     method => 'POST', query_form_post => $encoded_data);
-
 }
 
 1;
