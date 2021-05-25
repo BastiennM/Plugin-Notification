@@ -88,8 +88,8 @@ sub new {
         'port:s'                => { name => 'port', default => 8000 },
         'proto:s'               => { name => 'proto', default => 'https' },
         'api-key:s'             => { name => 'api_key'},
-        'name:s'                => { name=> 'name' ,default => 'test'} ,
-		'message:s'             => { name=> 'message' , default => 'test'} ,
+        'name:s'                => { name=> 'name'} ,
+		'message:s'             => { name=> 'message'} ,
         'status:s'              => { name=> 'status' },
 		'visible:s'             => { name=> 'visible', default => 'true' },
         'component-id:s'        => { name=> 'component_id' },
@@ -151,10 +151,18 @@ sub cachet_statusupdate{
 sub cachet_message{
     my ($self, %options) = @_;
 
-    if (defined($self->{option_results}->{language}) && $self->{option_results}->{language} ne '') {
-        if (defined($cachet_message{lc($self->{option_results}->{language})})) {
-            $self->{option_results}->{name} = decode($enc,$cachet_message{lc($self->{option_results}->{language})}{$self->{option_results}->{component_status}}{name});
-            $self->{option_results}->{message} = decode($enc, $cachet_message{lc($self->{option_results}->{language})}{$self->{option_results}->{component_status}}{message});
+    if (!defined($self->{option_results}->{name})){
+        if (defined($self->{option_results}->{language}) && $self->{option_results}->{language} ne '') {
+            if (defined($cachet_message{lc($self->{option_results}->{language})})) {
+                $self->{option_results}->{name} = decode($enc,$cachet_message{lc($self->{option_results}->{language})}{$self->{option_results}->{component_status}}{name});
+            }
+        }
+    }
+    if (!defined($self->{option_results}->{message})){
+        if (defined($self->{option_results}->{language}) && $self->{option_results}->{language} ne '') {
+            if (defined($cachet_message{lc($self->{option_results}->{language})})) {
+                $self->{option_results}->{message} = decode($enc,$cachet_message{lc($self->{option_results}->{language})}{$self->{option_results}->{component_status}}{message});
+            }
         }
     }
 }
