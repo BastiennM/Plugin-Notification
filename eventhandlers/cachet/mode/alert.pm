@@ -90,7 +90,7 @@ sub new {
         'api-key:s'             => { name => 'api_key'},
         'name:s'                => { name=> 'name'} ,
 		'message:s'             => { name=> 'message'} ,
-        'status:s'              => { name=> 'status' , default=> 1},
+        'status:s'              => { name=> 'status' , default => 1},
 		'visible:s'             => { name=> 'visible', default => 'true' },
         'component-id:s'        => { name=> 'component_id' },
 		'component-status:s'    => { name=> 'component_status' },
