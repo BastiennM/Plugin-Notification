@@ -73,31 +73,14 @@ Le statut du composant correspond à des entiers allant de 0 à 3 avec pour chaq
 | 2 | CRITICAL | Panne partielle |
 | 3 | UNKNOWN | Panne majeure|
 
-
-### Message:
-
-Le message affiché est défini par défaut par le status du composant:
-
-| component-status | Message |
-|--|--|
-| Opérationnel | Message |
-|Problème de performances | Message |
-|Panne partielle | Message |
-|Panne majeure |Message|
-  
-
-Il peut être modifié ensuite grâce à l’argument --message.
-
 ### Name:
 
-  
-
 | component-status | Message |
 |--|--|
-| Opérationnel | Message |
-|Problème de performances | Message |
-|Panne partielle | Message |
-|Panne majeure |Message|
+| Opérationnel | Le service fonctionne normalement|
+|Problème de performances | Problème de performances|
+|Panne partielle | Panne partielle|
+|Panne majeure |Panne majeure|
 
 
 Le nom de l’incident  affiché est défini par défaut par le status du composant:
@@ -105,6 +88,19 @@ Le nom de l’incident  affiché est défini par défaut par le status du compos
 Il peut être modifié ensuite grâce à l’argument --name.
 
   
+### Message:
+
+Le message affiché est défini par défaut par le status du composant:
+
+| component-status | Message |
+|--|--|
+| Opérationnel | Aucun problèmes détecté|
+|Problème de performances | Nous rencontrons quelques problèmes de performances|
+|Panne partielle | Une panne partielle à été détecté, nos équipe sont averti et travaillent à le régler|
+|Panne majeure |Une panne majeure à été détecté, nos équipe sont averti et travaillent à le régler|
+  
+
+Il peut être modifié ensuite grâce à l’argument --message.
 
 ### Status:
 
