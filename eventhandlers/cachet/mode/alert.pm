@@ -41,20 +41,20 @@ my %cachet_status = (
 my %cachet_message = (
     "fr" => {
         1 => {
-            name => "Tout va bien",
+            name => "Le service fonctionne normalement",
             message => "Aucun problèmes détecté"
             },
         2 => {
-            name => "Probleme de performances",
-            message =>"Petit problème de performances"
+            name => "Problème de performances",
+            message =>"Nous rencontrons quelques problèmes de performances"
         },
         3 => {
             name =>"Panne partielle",
-            message =>"petite panne"
+            message =>"Une panne partielle à été détecté, nos équipes sont averti et travaille à le regler"
         },
         4 => {
             name=>"Panne majeure",
-            message=>"grosse panne"
+            message=>"Une panne majeur à été détecté, nos équipes sont averti et travaille à le regler"
         }
     },
     "en" => {
