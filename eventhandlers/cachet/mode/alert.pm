@@ -46,7 +46,7 @@ my %cachet_message = (
             },
         2 => {
             name => "Probleme de performances",
-            message =>"petit problème de perf"
+            message =>"Petit problème de performances"
         },
         3 => {
             name =>"Panne partielle",
@@ -249,6 +249,10 @@ A message (supporting Markdown) to explain more
 =item B<--visible>
 
 Whether the incident is publicly visible (true by default)
+
+=item B<--language>
+
+Language in wich will be displayed the message (french by default)
 
 =back
 
