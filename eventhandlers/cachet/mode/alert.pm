@@ -42,7 +42,7 @@ my %cachet_message = (
     "fr" => {
         1 => {
             name => "Le service fonctionne normalement",
-            message => "Aucun problèmes détecté"
+            message => "Aucun problèmes détectés"
             },
         2 => {
             name => "Problème de performances",
@@ -50,11 +50,11 @@ my %cachet_message = (
         },
         3 => {
             name =>"Panne partielle",
-            message =>"Une panne partielle à été détecté, nos équipes sont averti et travaillent à le régler"
+            message =>"Une panne partielle à été détectée, nos équipes sont averti et travaillent à le régler"
         },
         4 => {
             name=>"Panne majeure",
-            message=>"Une panne majeur à été détecté, nos équipes sont averti et travaillent à le régler"
+            message=>"Une panne majeur à été détectée, nos équipes sont averti et travaillent à le régler"
         }
     },
     "en" => {
@@ -95,6 +95,8 @@ sub new {
         'component-id:s'        => { name=> 'component_id' },
 		'component-status:s'    => { name=> 'component_status' },
         'language:s'            => { name=> 'language' , default=>'fr'},
+        'state:s'               => { name=> 'state'},
+        'only-hard:s'            => { name=> 'only_hard', default=> 0},
     });
 
 
@@ -131,6 +133,18 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "You need to set --status between 1 and 4");
         $self->{output}->option_exit();
     }
+    if (($self->{option_results}->{state}) ne "HARD" && ($self->{option_results}->{state}) ne "SOFT") {
+        $self->{output}->add_option_msg(short_msg => "You need to set --state option with HARD or SOFT");
+        $self->{output}->option_exit();
+    }
+    if (($self->{option_results}->{only_hard}) ne "true") {
+        $self->{output}->add_option_msg(short_msg => "You need to set --only-har option with true");
+        $self->{output}->option_exit();
+    }
+    if (!defined($self->{option_results}->{state})) {
+        $self->{output}->add_option_msg(short_msg => "You need to set --state option");
+        $self->{output}->option_exit();
+    }
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
@@ -142,6 +156,16 @@ sub cachet_statusupdate{
                 $self->{option_results}->{component_status} = $cachet_status{lc($self->{option_results}->{component_status})};
             }
         }
+}
+
+sub bool{
+    my ($self, %options) = @_;
+
+    if($self->{option_results}->{only_hard}){
+        if($self->{option_results}->{state} eq "SOFT"){
+            exit;
+        }
+    }
 }
 
 sub cachet_message{
@@ -168,13 +192,14 @@ sub run {
 
     $self->cachet_statusupdate();
     $self->cachet_message();
+    $self->bool();
 
     my $url = $self->{option_results}->{urlpath} . "api/v1/incidents";
 
     $self->{http}->add_header(key => 'Content-Type', value => 'application/json');
     $self->{http}->add_header(key => 'X-Cachet-Token', value => $self->{option_results}->{api_key});
 
-    my $data = { name => $self->{option_results}->{name}, message => $self->{option_results}->{message}, status => $self->{option_results}->{status}, visible => $self->{option_results}->{visible}, component_id => $self->{option_results}->{component_id}, component_status => $self->{option_results}->{component_status}};
+    my $data = {name => $self->{option_results}->{name}, message => $self->{option_results}->{message}, status => $self->{option_results}->{status}, visible => $self->{option_results}->{visible}, component_id => $self->{option_results}->{component_id}, component_status => $self->{option_results}->{component_status}};
     my $encoded_data = encode_json($data);
     my $response = $self->{http}->request(url_path => $url,
     method => 'POST', query_form_post => $encoded_data);
