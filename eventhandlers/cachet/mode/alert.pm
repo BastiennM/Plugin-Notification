@@ -50,29 +50,29 @@ my %cachet_message = (
         },
         3 => {
             name =>"Panne partielle",
-            message =>"Une panne partielle à été détecté, nos équipes sont averti et travaille à le regler"
+            message =>"Une panne partielle à été détecté, nos équipes sont averti et travaillent à le régler"
         },
         4 => {
             name=>"Panne majeure",
-            message=>"Une panne majeur à été détecté, nos équipes sont averti et travaille à le regler"
+            message=>"Une panne majeur à été détecté, nos équipes sont averti et travaillent à le régler"
         }
     },
     "en" => {
         1 => {
-            name => "everything is okey",
-            message => "no problem"
+            name => "Service is operating normally",
+            message => "No problems detected"
             },
         2 => {
-            name => "Prooblèm perf",
-            message =>"petit problème de perf"
+            name => "Performance issue",
+            message =>"We're running into some performance issues"
         },
         3 => {
-            name =>"Panne partielle",
-            message =>"petite panne"
+            name =>"Partial failure",
+            message =>"A partial failure has been detected, our teams are notified and working to fix it"
         },
         4 => {
-            name=>"Panne majeure",
-            message=>"grosse panne"
+            name=>"Major Failure",
+            message=>"A major failure has been detected, our teams are notified and working to fix it"
         }
     }
 );
