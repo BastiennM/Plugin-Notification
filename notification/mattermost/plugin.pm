@@ -24,6 +24,7 @@ use strict;
 use warnings;
 use base qw(centreon::plugins::script_simple);
 
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -31,7 +32,7 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'alert'    => 'notification::telegram::mode::alert',
+        'alert'    => 'notification::mattermost::mode::alert',
     );
 
     return $self;

@@ -279,6 +279,14 @@ Whether the incident is publicly visible (true by default)
 
 Language in wich will be displayed the message (french by default)
 
+=item B<--state>
+
+State of the service, it can be SOFT or HARD
+
+=item B<--only-hard>
+
+Notify cachet only if the state is HARD
+
 =back
 
 =cut
