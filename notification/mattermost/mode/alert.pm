@@ -40,6 +40,17 @@ my %telegram_icon_service = (
     critical => ":fire:",
     unknown => ":x:",
 );
+my %telegram_color_host = (
+    up => "#87bd23",
+    down => "#ed1c24",
+    unreachable => "#cdcdcd",
+);
+my %telegram_color_service = (
+    ok => "#87bd23",
+    warning => "#ff9913",
+    critical => "#ed1c24",
+    unknown => "#cdcdcd",
+);
 
 sub new {
     my ($class, %options) = @_;
@@ -54,12 +65,16 @@ sub new {
         "channel-id:s"          => { name => 'channel_id' },
         "message:s"             => { name => 'message' },
         "service-description:s" => { name => 'service_description' },
+        "service-state:s" => { name => 'service_state' },
+        "service-output:s" => { name => 'service_output' },
         "bearer-token:s"        => { name => 'bearer_token' },
         "host-name:s"           => { name => 'host_name'},
         "host-state:s"          => { name => 'host_state' },
+        "notification-type:s"   => { name => 'notification_type' },
         "host-output:s"         => { name => 'host_output' },
         "link-url:s"            => { name => 'link_url' },
         "graph-url:s"            => { name => 'graph_url' },
+        "time:s"            => { name => 'time' },
     });
 
     $self->{http} = centreon::plugins::http->new(%options);
@@ -101,22 +116,42 @@ sub host_message {
 
     if (defined($self->{option_results}->{host_state}) && $self->{option_results}->{host_state} ne '') {
         if (defined($telegram_icon_host{lc($self->{option_results}->{host_state})})) {
-            $self->{message} = $telegram_icon_host{lc($self->{option_results}->{host_state})};
+            $self->{title} ='### '.$telegram_icon_host{lc($self->{option_results}->{host_state})};
         }
     }
-
-    $self->{message} .= "Host *" . $self->{option_results}->{host_name} . "*";
-
     if (defined($self->{option_results}->{host_state}) && $self->{option_results}->{host_state} ne '') {
-        $self->{message} .= ' is **' . $self->{option_results}->{host_state} . '**';
-    } else {
-        $self->{message} .= ' alert';
+        if (defined($telegram_color_host{lc($self->{option_results}->{host_state})})) {
+            $self->{color} =$telegram_color_host{lc($self->{option_results}->{host_state})};
+        }
+    }
+    if (defined($self->{option_results}->{host_name}) && $self->{option_results}->{host_name} ne '') {
+        $self->{title}.=' *'.$self->{option_results}->{host_name}.'*';
+    } 
+    if (defined($self->{option_results}->{host_state}) && $self->{option_results}->{host_state} ne '') {
+        $self->{title}.=' is **'.uc($self->{option_results}->{host_state}). '** - ';
+    }
+    else {
+        $self->{title} .= ' alert';
+    }
+
+    if (defined($self->{option_results}->{notification_type}) && $self->{option_results}->{notification_type} ne '') {
+        $self->{title} .= '**' . $self->{option_results}->{notification_type}.'**';
     }
     if (defined($self->{option_results}->{host_output}) && $self->{option_results}->{host_output} ne '') {
-        $self->{message} .= " <br> " . $self->{option_results}->{host_output};
+        $self->{message1} .= '>'.
+'#### '.$self->{option_results}->{host_output};
+    }
+    if (defined($self->{option_results}->{time}) && $self->{option_results}->{time} ne '') {
+        $self->{message2} .= '##### :clock1: 
+        **'.$self->{option_results}->{time}."**
+";
+    }
+    else{
+       $self->{message2} .= '##### :clock1: **'.localtime()."**
+"; 
     }
     if (defined($self->{option_results}->{link_url}) && $self->{option_results}->{link_url} ne '') {
-        $self->{message} .= "   [Link](" . $self->{option_results}->{link_url} . ")";
+        $self->{message3} .= "##### :link: [Link](" . $self->{option_results}->{link_url} . ")";
     }
 }
 
@@ -125,25 +160,44 @@ sub service_message {
 
     if (defined($self->{option_results}->{service_state}) && $self->{option_results}->{service_state} ne '') {
         if (defined($telegram_icon_service{lc($self->{option_results}->{service_state})})) {
-            $self->{message} = $telegram_icon_service{lc($self->{option_results}->{service_state})};
+            $self->{title} ='### '.$telegram_icon_service{lc($self->{option_results}->{service_state})};
         }
     }
-
-    $self->{message} .= " Host *italic*" . $self->{option_results}->{host_name} . " | Service " . $self->{option_results}->{service_description} . "*italic*";
-
     if (defined($self->{option_results}->{service_state}) && $self->{option_results}->{service_state} ne '') {
-        $self->{message} .= ' is <b>' . $self->{option_results}->{service_state} . '</b>';
+        if (defined($telegram_color_service{lc($self->{option_results}->{service_state})})) {
+            $self->{color} =$telegram_color_service{lc($self->{option_results}->{service_state})};
+        }
+    }
+    
+    if (defined($self->{option_results}->{host_name}) && $self->{option_results}->{host_name} ne '') {
+        $self->{title}.=' *'.$self->{option_results}->{host_name}.'*';
+    } 
+    if (defined($self->{option_results}->{service_description}) && $self->{option_results}->{service_description} ne '') {
+        $self->{title}.=" - ".$self->{option_results}->{service_description}.' is **';
     } else {
-        $self->{message} .= ' alert';
+        $self->{title} .= ' alert';
+    }
+    
+    if (defined($self->{option_results}->{service_state}) && $self->{option_results}->{service_state} ne '') {
+        $self->{title} .= $self->{option_results}->{service_state}. '** | ';
+    }
+    if (defined($self->{option_results}->{notification_type}) && $self->{option_results}->{notification_type} ne '') {
+        $self->{title} .= '**' . $self->{option_results}->{notification_type}.'**';
     }
     if (defined($self->{option_results}->{service_output}) && $self->{option_results}->{service_output} ne '') {
-        $self->{message} .= "\n ".  $self->{option_results}->{service_output};
+        $self->{message1} .= '>'.
+'#### '.$self->{option_results}->{service_output};
+    }
+    if (defined($self->{option_results}->{time}) && $self->{option_results}->{time} ne '') {
+        $self->{message2} .= '##### :clock1: **'.$self->{option_results}->{time}."**
+";
+    }
+    else{
+       $self->{message2} .= '##### :clock1: **'.localtime()."**
+"; 
     }
     if (defined($self->{option_results}->{link_url}) && $self->{option_results}->{link_url} ne '') {
-        $self->{message} .= "\n <a href=\"" . $self->{option_results}->{link_url} . "\">Link</a>";
-    }
-    if (defined($self->{option_results}->{graph_url}) && $self->{option_results}->{graph_url} ne '') {
-        $self->{message} .= "\n <a href=\"" . $self->{option_results}->{graph_url} . "\">Graph</a>";
+        $self->{message3} .= "##### :link: [Link](" . $self->{option_results}->{link_url} . ")";
     }
 }
 
@@ -164,7 +218,31 @@ sub format_payload {
 
     my $payload = {
         channel_id =>$self->{option_results}->{channel_id},
-        message => $self->{message}
+        props => { attachments => [
+            {
+            fallback => $self->{option_results}->{message},
+            color => $self->{color},
+            fields=>[
+                {
+                   short => "false",
+                   value => $self->{title}
+                },
+                {
+                   short => "false",
+                   value => $self->{message1}
+                },
+                {
+                   short => "true",
+                   value => $self->{message2}
+                },
+                {
+                   short => "true",
+                   value => $self->{message3}
+                }
+            ]
+            }
+        ]
+        }
     };
     eval {
         $self->{payload_str} = $json->encode($payload);
