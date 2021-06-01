@@ -89,10 +89,6 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "You need to set --channel-id option");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{option_results}->{message})) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --message option");
-        $self->{output}->option_exit();
-    }
     if (!defined($self->{option_results}->{bearer_token})) {
         $self->{output}->add_option_msg(short_msg => "You need to set --bearer token option");
         $self->{output}->option_exit();
