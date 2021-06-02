@@ -63,18 +63,16 @@ sub new {
         "proto:s"               => { name => 'proto', default => 'http' },
         "urlpath:s"             => { name => 'url_path', default => "/api/v4/posts" },
         "channel-id:s"          => { name => 'channel_id' },
-        "message:s"             => { name => 'message' },
         "service-description:s" => { name => 'service_description' },
-        "service-state:s" => { name => 'service_state' },
-        "service-output:s" => { name => 'service_output' },
+        "service-state:s"       => { name => 'service_state' },
+        "service-output:s"      => { name => 'service_output' },
         "bearer-token:s"        => { name => 'bearer_token' },
         "host-name:s"           => { name => 'host_name'},
         "host-state:s"          => { name => 'host_state' },
         "notification-type:s"   => { name => 'notification_type' },
         "host-output:s"         => { name => 'host_output' },
         "link-url:s"            => { name => 'link_url' },
-        "graph-url:s"            => { name => 'graph_url' },
-        "time:s"            => { name => 'time' },
+        "time:s"                => { name => 'time' },
     });
 
     $self->{http} = centreon::plugins::http->new(%options);
@@ -98,7 +96,7 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    foreach (('graph_url', 'link_url')) {
+    foreach (('link_url')) {
         if (defined($self->{option_results}->{$_})) {
             $self->{option_results}->{$_} =~ s/%\{(.*?)\}/$self->{option_results}->{$1}/eg;
         }
@@ -264,23 +262,6 @@ sub run {
         url_path => $url_path,
         method => 'POST', query_form_post => $self->{payload_str}
     );
-    my $decoded;
-    eval {
-        $decoded = JSON::XS->new->utf8->decode($response);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
-    }
-    if (!defined($decoded->{result}->{id})) {
-        $self->{output}->output_add(long_msg => $decoded, debug => 1);
-        $self->{output}->add_option_msg(short_msg => "Error sending message");
-        $self->{output}->option_exit();
-    }
-
-    $self->{output}->output_add(short_msg => 'Message ID : ' . $decoded->{result}->{id});
-    $self->{output}->display(force_ignore_perfdata => 1);
-    $self->{output}->exit();
 }
 
 1;
@@ -289,63 +270,57 @@ __END__
 
 =head1 MODE
 
-Send message with Telegram API.
+Send message with Mattermost API.
 
 =over 6
 
-=item B<--chat-id>
+=item B<--address>
+Specify host server address for the alert (Required).
 
-Telegram Chat ID (Negative Integer for Group)
-Use Telegram CLI for getting Chat ID
+=item B<--port>
+Specify the port of the server.
 
-=item B<--bot-token>
+=item B<--proto>
+Specify the protocol to use.
 
-Telegram Bot Token (Check Telegram Doc for Creating Bot)
-https://core.telegram.org/bots#3-how-do-i-create-a-bot
+=item B<--urlpath>
+Specify the path to add after the adress.
 
-=item B<--host-state>
-
-Specify host server state for the alert.
-
-=item B<--host-output>
-
-Specify host server output message for the alert.
-
-=item B<--host-name>
-
-Specify host server name for the alert (Required).
+=item B<--channel-id>
+Specify the id of the channel to use.
 
 =item B<--service-description>
-
-Specify service description name for the alert.
+Specify the description of the service.
 
 =item B<--service-state>
-
-Specify service state for the alert.
+Specify the state of the service.
 
 =item B<--service-output>
+Specify the output of the service to be displayed.
 
-Specify service output message for the alert.
+=item B<--bearer-token>
+Specify the bearer token of your user (Required).
 
-=item B<--centreon-url>
+=item B<--host-name>
+Specify the name of your host.
 
-Specify the centreon url macro (could be used in link-url and graph-url option).
+=item B<--host-state>
+Specify the state of your host.
 
-=item B<--centreon-token>
+=item B<--host-output>
+Specify the state of your host.
 
-Specify the centreon token for autologin macro (could be used in link-url and graph-url option).
+=item B<--host-state>
+Specify the state of your host.
 
-=item B<--graph-url>
-
-Specify the graph url (Example: %{centreon_url}/include/views/graphs/generateGraphs/generateImage.php?username=myuser&token=%{centreon_token}&hostname=%{host_name}&service=%{service_description}).
+=item B<--notification-type>
+Specify type of the notification displayed.
 
 =item B<--link-url>
+Specify the link to be attached to the notification.
 
-Specify the link url (Example: %{centreon_url}/main.php?p=20201&o=svc&host_search=%{host_name}&svc_search=%{service_description})
-
-=item B<--timeout>
-
-Threshold for HTTP timeout.
+=item B<--time>
+Specify the time at when the post will appeared.
 
 =back
 
